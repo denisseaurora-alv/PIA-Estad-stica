@@ -1,0 +1,205 @@
+---
+title: "HW_02: Contraste de medias"
+author: "Denisse Aurora Alvarado Reyna"
+date: "`r Sys.Date()`"
+output: 
+  pdf_document:
+    latex_engine: xelatex
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+library(dplyr)
+```
+
+# Análisis de diferencias en largo de pétalo entre especies versicolor y virginica
+
+## Exploración de datos
+
+```{r exploracion}
+head(iris)
+summary(iris)
+str(iris)
+table(iris$Species)
+```
+
+## Selección de especies: versicolor y virginica
+
+```{r seleccion}
+data_sub <- subset(iris, Species %in% c("versicolor", "virginica"))
+nrow(data_sub)
+table(data_sub$Species)
+```
+
+## Estadísticas descriptivas del largo del pétalo
+
+```{r estadisticas_descriptivas}
+aggregate(Petal.Length ~ Species, data = data_sub, FUN = function(x) {
+  c(n = length(x),
+    media = mean(x),
+    mediana = median(x),
+    desv_est = sd(x),
+    min = min(x),
+    max = max(x))
+})
+
+by(data_sub$Petal.Length, data_sub$Species, summary)
+```
+
+## Pregunta de investigación e hipótesis
+
+### Pregunta de investigación
+
+¿Existe diferencia significativa en la media del largo de pétalo entre las especies versicolor y virginica de iris?
+
+### Hipótesis estadísticas
+
+-   **H₀: μ₁ = μ₂** (No hay diferencia en las medias del largo de pétalo entre especies)
+-   **H₁: μ₁ ≠ μ₂** (Hay diferencia en las medias del largo de pétalo entre especies)
+-   **Nivel de significancia: α = 0.05**
+
+## Verificación de supuestos
+
+```{r supuestos}
+versicolor_data <- data_sub$Petal.Length[data_sub$Species == "versicolor"]
+virginica_data <- data_sub$Petal.Length[data_sub$Species == "virginica"]
+
+# Pruebas de normalidad
+shapiro_versicolor <- shapiro.test(versicolor_data)
+shapiro_virginica <- shapiro.test(virginica_data)
+
+cat("p-value Shapiro-Wilk versicolor:", shapiro_versicolor$p.value, "\n")
+cat("p-value Shapiro-Wilk virginica:", shapiro_virginica$p.value, "\n")
+
+# Prueba de igualdad de varianzas (Prueba F)
+var_test <- var.test(versicolor_data, virginica_data)
+cat("p-value prueba F de varianzas:", var_test$p.value, "\n")
+
+equal_var <- var_test$p.value > 0.05
+cat("¿Varianzas iguales?", equal_var, "\n")
+
+# Justificación del tipo de prueba
+if(equal_var) {
+  cat("Se aplicará prueba t clásica (varianzas iguales)\n")
+} else {
+  cat("Se aplicará prueba t de Welch (varianzas diferentes)\n")
+}
+```
+
+## Prueba t de dos muestras independientes
+
+```{r prueba_t}
+t_test_result <- t.test(Petal.Length ~ Species, 
+                        data = data_sub,
+                        var.equal = equal_var,
+                        alternative = "two.sided",
+                        conf.level = 0.95)
+t_test_result
+```
+
+## Cálculo del tamaño del efecto (Cohen's d)
+
+```{r cohens_d}
+cohens_d <- function(x, y) {
+  n1 <- length(x)
+  n2 <- length(y)
+  s_pooled <- sqrt(((n1-1)*var(x) + (n2-1)*var(y)) / (n1+n2-2))
+  d <- (mean(x) - mean(y)) / s_pooled
+  return(d)
+}
+
+cohen_d <- cohens_d(virginica_data, versicolor_data)
+cat("Cohen's d:", round(cohen_d, 3), "\n")
+
+efecto_interpretacion <- if(abs(cohen_d) < 0.2) {
+  "pequeño"
+} else if(abs(cohen_d) < 0.5) {
+  "pequeño a mediano"  
+} else if(abs(cohen_d) < 0.8) {
+  "mediano a grande"
+} else {
+  "grande"
+}
+cat("Interpretación del tamaño del efecto:", efecto_interpretacion, "\n")
+```
+
+## Visualizaciones
+
+### Boxplot comparativo
+
+```{r boxplot, fig.height=5}
+ggplot(data_sub, aes(x = Species, y = Petal.Length, fill = Species)) +
+  geom_boxplot(alpha = 0.7, outlier.shape = 16, outlier.size = 2) +
+  geom_jitter(width = 0.2, alpha = 0.6, size = 2) +
+  scale_fill_manual(values = c("versicolor" = "#2E86C1", "virginica" = "#E74C3C")) +
+  labs(title = "Comparación del Largo de Pétalo entre Especies",
+       subtitle = "Iris versicolor vs. virginica",
+       x = "Especie", y = "Largo de pétalo (cm)") +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+
+### Violin plot
+
+```{r violin_plot, fig.height=5}
+ggplot(data_sub, aes(x = Species, y = Petal.Length, fill = Species)) +
+  geom_violin(alpha = 0.7, trim = FALSE) +
+  geom_boxplot(width = 0.1, fill = "white", alpha = 0.8) +
+  scale_fill_manual(values = c("versicolor" = "#2E86C1", "virginica" = "#E74C3C")) +
+  labs(title = "Distribución del Largo de Pétalo por Especie",
+       subtitle = "Violin plot con boxplot superpuesto",
+       x = "Especie", y = "Largo de pétalo (cm)") +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+
+## Resumen de resultados
+
+```{r resumen}
+cat("=== RESUMEN DEL ANÁLISIS ESTADÍSTICO ===\n\n")
+
+cat("Muestra: n_versicolor =", length(versicolor_data), 
+    ", n_virginica =", length(virginica_data), "\n\n")
+
+cat("MEDIAS:\n")
+cat("Media versicolor:", round(mean(versicolor_data), 3), "cm\n")
+cat("Media virginica:", round(mean(virginica_data), 3), "cm\n")
+cat("Diferencia de medias:", round(mean(virginica_data) - mean(versicolor_data), 3), "cm\n\n")
+
+cat("RESULTADOS DE LA PRUEBA t:\n")
+cat("Estadístico t =", round(t_test_result$statistic, 3), "\n")
+cat("Grados de libertad =", round(t_test_result$parameter, 1), "\n")
+cat("p-value =", format(t_test_result$p.value, scientific = TRUE, digits = 3), "\n")
+cat("Intervalo de confianza 95%: [", 
+    round(t_test_result$conf.int[1], 3), ",", 
+    round(t_test_result$conf.int[2], 3), "]\n\n")
+
+cat("TAMAÑO DEL EFECTO:\n")
+cat("Cohen's d =", round(cohen_d, 3), "(tamaño del efecto", efecto_interpretacion, ")\n\n")
+
+cat("DECISIÓN ESTADÍSTICA:\n")
+if(t_test_result$p.value < 0.05) {
+  cat("Rechazamos H₀. Existe diferencia significativa entre las medias del largo de pétalo.\n")
+} else {
+  cat("No rechazamos H₀. No hay evidencia de diferencia significativa.\n")
+}
+
+cat("\nINTERPRETACIÓN BIOLÓGICA:\n")
+if(t_test_result$p.value < 0.05) {
+  cat("Las especies versicolor y virginica presentan diferencias morfológicas\n")
+  cat("significativas en el largo de sus pétalos, lo que puede reflejar\n")
+  cat("adaptaciones evolutivas distintas o presiones selectivas diferentes.\n")
+} else {
+  cat("No se detectaron diferencias significativas en el largo de pétalos\n")
+  cat("entre las especies, sugiriendo similaridad en este rasgo morfológico.\n")
+}
+```
+
+## Síntesis del análisis
+
+**Planteamiento del problema:** Se evaluó si existen diferencias significativas en el largo promedio de pétalos entre las especies *Iris versicolor* e *Iris virginica*, utilizando una prueba t de dos muestras independientes.
+
+**Resultados principales:** - La especie virginica presenta pétalos significativamente más largos (media = `r round(mean(data_sub$Petal.Length[data_sub$Species == "virginica"]), 2)` cm) que versicolor (media = `r round(mean(data_sub$Petal.Length[data_sub$Species == "versicolor"]), 2)` cm). - La diferencia es estadísticamente significativa (p \< 0.001) con un tamaño del efecto grande (d \> 2.0).
+
+**Interpretación biológica:** Esta diferencia morfológica significativa en el largo de pétalos entre especies sugiere divergencia evolutiva en los caracteres florales, posiblemente relacionada con diferentes estrategias reproductivas, polinizadores específicos o adaptaciones a distintos ambientes.
