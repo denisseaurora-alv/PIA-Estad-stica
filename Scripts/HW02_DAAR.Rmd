@@ -124,8 +124,6 @@ efecto_interpretacion <- if(abs(cohen_d) < 0.2) {
 cat("Interpretación del tamaño del efecto:", efecto_interpretacion, "\n")
 ```
 
-## Visualizaciones
-
 ### Boxplot comparativo
 
 ```{r boxplot, fig.height=5}
@@ -198,8 +196,8 @@ if(t_test_result$p.value < 0.05) {
 
 ## Síntesis del análisis
 
-**Planteamiento del problema:** Se evaluó si existen diferencias significativas en el largo promedio de pétalos entre las especies *Iris versicolor* e *Iris virginica*, utilizando una prueba t de dos muestras independientes.
+Planteamiento del problema: Se evaluó si existen diferencias significativas en el largo promedio de pétalos entre las especies *Iris versicolor* e *Iris virginica*, utilizando una prueba t de dos muestras independientes.
 
-**Resultados principales:** - La especie virginica presenta pétalos significativamente más largos (media = `r round(mean(data_sub$Petal.Length[data_sub$Species == "virginica"]), 2)` cm) que versicolor (media = `r round(mean(data_sub$Petal.Length[data_sub$Species == "versicolor"]), 2)` cm). - La diferencia es estadísticamente significativa (p \< 0.001) con un tamaño del efecto grande (d \> 2.0).
+Resultados principales:La especie virginica presenta pétalos significativamente más largos (media = `r round(mean(data_sub$Petal.Length[data_sub$Species == "virginica"]), 2)` cm) que versicolor (media = `r round(mean(data_sub$Petal.Length[data_sub$Species == "versicolor"]), 2)` cm). - La diferencia es estadísticamente significativa (p \< 0.001) con un tamaño del efecto grande (d \> 2.0).
+Interpretación biológica:Esta diferencia morfológica significativa en el largo de pétalos entre especies sugiere divergencia evolutiva en los caracteres florales, posiblemente relacionada con diferentes estrategias reproductivas, polinizadores específicos o adaptaciones a distintos ambientes.
 
-**Interpretación biológica:** Esta diferencia morfológica significativa en el largo de pétalos entre especies sugiere divergencia evolutiva en los caracteres florales, posiblemente relacionada con diferentes estrategias reproductivas, polinizadores específicos o adaptaciones a distintos ambientes.
