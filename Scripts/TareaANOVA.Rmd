@@ -1,0 +1,111 @@
+---
+title: "Ejercicio ANOVA"
+author: "Denisse Aurora Alvarado Reyna"
+date: "2025-09-22"
+output: pdf_document
+---
+```{r analisis-completo, warning=FALSE, message=FALSE}
+# Introduccion
+# Este analisis evalua las diferencias en concentraciones de estroncio (mg/ml) 
+# entre cinco cuerpos de agua mediante ANOVA de una via y pruebas post-hoc 
+
+library(tidyverse)
+library(agricolae)
+library(car)
+library(ggplot2)
+
+grayson <- c(28.2, 33.2, 36.4, 34.6, 29.1, 31.0)
+beaver <- c(39.6, 40.8, 37.9, 37.1, 43.6, 42.4)
+angler <- c(46.3, 42.1, 43.5, 48.8, 43.7, 40.1)
+appletree <- c(41.0, 44.1, 46.4, 40.2, 38.6, 36.3)
+rock <- c(56.3, 54.1, 59.4, 62.7, 60.0, 57.3)
+
+datos <- data.frame(
+  concentracion = c(grayson, beaver, angler, appletree, rock),
+  sitio = factor(rep(c("Grayson", "Beaver", "Angler", "Appletree", "Rock"), each = 6))
+)
+
+str(datos)
+head(datos, 10)
+
+# Estadisticas descriptivas
+estadisticas <- datos %>%
+  group_by(sitio) %>%
+  summarise(
+    n = n(),
+    media = mean(concentracion),
+    desv_est = sd(concentracion),
+    varianza = var(concentracion),
+    minimo = min(concentracion),
+    maximo = max(concentracion),
+    .groups = 'drop'
+  )
+
+print(estadisticas)
+cat("Media general:", mean(datos$concentracion), "mg/ml\n")
+cat("Numero total de observaciones:", nrow(datos), "\n")
+cat("Numero de grupos:", length(unique(datos$sitio)), "\n")
+
+# Visualizacion
+boxplot(concentracion ~ sitio, data = datos,
+        main = "Concentraciones de Estroncio por Sitio",
+        xlab = "Cuerpo de Agua",
+        ylab = "Concentracion (mg/ml)",
+        col = c("blue", "coral", "green", "yellow", "pink"))
+
+# ANOVA
+modelo_anova <- aov(concentracion ~ sitio, data = datos)
+summary(modelo_anova)
+
+# Verificacion de supuestos
+residuos <- residuals(modelo_anova)
+shapiro.test(residuos)
+leveneTest(concentracion ~ sitio, data = datos)
+
+# Pruebas post-hoc
+prueba_lsd <- LSD.test(modelo_anova, "sitio", alpha = 0.05)
+print(prueba_lsd)
+
+n_por_grupo <- 6
+gl_error <- 25
+alpha <- 0.05
+t_critico <- qt(1 - alpha/2, gl_error)
+cme <- summary(modelo_anova)[[1]][2, 3]
+lsd_valor <- t_critico * sqrt(cme * (2/n_por_grupo))
+cat("Valor LSD =", round(lsd_valor, 4), "mg/ml\n")
+
+# Tukey
+prueba_tukey <- TukeyHSD(modelo_anova, conf.level = 0.95)
+print(prueba_tukey)
+tukey_test <- HSD.test(modelo_anova, "sitio", alpha = 0.05)
+print("Grupos homogeneos (Tukey):")
+print(tukey_test$groups)
+
+k <- 5
+q_critico <- qtukey(0.95, k, gl_error)
+tukey_hsd <- q_critico * sqrt(cme/n_por_grupo)
+cat("Valor Tukey HSD =", round(tukey_hsd, 4), "mg/ml\n")
+
+# Grafico de Tukey 
+tukey_df <- data.frame(prueba_tukey$sitio)
+tukey_df$Comparacion <- rownames(tukey_df)
+
+ggplot(tukey_df, aes(x = diff, y = Comparacion)) +
+  geom_point() +
+  geom_errorbarh(aes(xmin = lwr, xmax = upr), height = 0.2) +
+  geom_vline(xintercept = 0, linetype = "dashed", color = "red") +
+  labs(title = "IC95% Prueba de Tukey",
+       x = "Diferencias entre medias de sitio",
+       y = "Comparaciones") +
+  theme_minimal()
+
+# Comparacion de metodos
+cat("COMPARACION DE METODOS:\n")
+cat("LSD (alpha=0.05):", round(lsd_valor, 3), "mg/ml\n")
+cat("Tukey HSD:", round(tukey_hsd, 3), "mg/ml\n")
+cat("Tukey es mas conservador que LSD\n")
+
+# Conclusiones
+# ANOVA: F(4,25)=56.16, p<0.001. Se rechaza H0
+# Rock River: concentraciones mas altas (58.30 mg/ml)
+# Graysons Pond: mejores condiciones (32.08 mg/ml)
