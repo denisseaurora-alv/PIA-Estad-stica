@@ -1,0 +1,130 @@
+---
+title: "HW_ 01 (Laboratorio 1: Empezar con R y RStudio)"
+author: "Denisse Aurora Alvarado Reyna"
+output: pdf_document
+editor_options: 
+  markdown: 
+    wrap: 72
+---
+
+# Parte I: Gastos
+
+\`\`\`{r} \# Gastos totales celular \<- 300 transporte \<- 240
+comestibles \<- 1527 gimnasio \<- 400 alquiler \<- 1500 otros \<- 1833
+
+gastos_total \<- celular + transporte + comestibles + gimnasio +
+alquiler + otros gastos_total
+
+# Calcular gastos en un semestre escolar (5 meses)
+
+gastos_semestre \<- gastos_total \* 5 gastos_semestre
+
+# Calcular gastos durante un año escolar (10 meses)
+
+gastos_año_escolar \<- gastos_total \* 10 gastos_año_escolar
+
+# Gráfico de gastos
+
+gastos \<- c(celular, transporte, comestibles, gimnasio, alquiler,
+otros) names(gastos) \<- c("celular", "transporte", "comestibles",
+"gimnasio", "alquiler", "otros") gastos_ordenados \<- sort(gastos,
+decreasing = TRUE)
+
+barplot(gastos_ordenados, main = "Gastos Mensuales - Orden Decreciente",
+ylab = "Monto (\$)", xlab = "Categorías", las = 2, ylim = c(0,
+max(gastos_ordenados) + 200))
+
+text(x = 1:length(gastos_ordenados), y = gastos_ordenados + 50, labels =
+gastos_ordenados, pos = 3, cex = 0.8)
+
+# Parte II: Variables
+
+# Problema 1
+
+variables_encuesta \<- c("Nombre de estudiante", "Fecha de nacimiento",
+"Edad (años)", "Dirección de casa", "Número de teléfono", "Área
+principal de estudio", "Grado de año universitario", "Puntaje en
+prueba", "Calificación general", "Tiempo para completar prueba", "Número
+de hermanos")
+
+tipos_variables \<- c("Cualitativa", "Cuantitativa", "Cuantitativa",
+"Cualitativa", "Cualitativa", "Cualitativa", "Cualitativa",
+"Cuantitativa", "Cualitativa", "Cuantitativa", "Cuantitativa")
+
+problema1 \<- data.frame(Variable = variables_encuesta, Tipo =
+tipos_variables, stringsAsFactors = FALSE)
+
+cat("PROBLEMA 1\n") print(problema1) cat("\n\n")
+
+# Problema 2
+
+variables_cuantitativas \<- c("Altura de la planta (cm)", "Diámetro de
+la flor (mm)", "Número de pétalos por flor", "Número de flores por
+planta", "Tiempo de floración (días)", "Profundidad de raíces (cm)",
+"Número de semillas por flor")
+
+variables_cualitativas \<- c("Nombre científico de la especie", "Color
+predominante de la flor", "Tipo de hábitat (bosque, pradera, jardín)",
+"Familia botánica (Asteraceae, Rosaceae, etc.)", "Forma de la flor
+(simple, compuesta, doble)", "Época de floración (primavera, verano,
+otoño)", "Nivel de cuidado requerido (bajo, medio, alto)")
+
+cat("PROBLEMA 2\n") cat("Variables CUANTITATIVAS:\n") for (i in
+1:length(variables_cuantitativas)) { cat(i, ".",
+variables_cuantitativas[i], "\n") }
+
+cat("\nVariables CUALITATIVAS:\n") for(i in
+1:length(variables_cualitativas)) { cat(i, ".",
+variables_cualitativas[i], "\n") } cat("\n\n")
+
+# Problema 3
+
+codigos_redes \<- c("1 = Twitter", "2 = correo electrónico", "3 =
+mensaje de texto", "4 = Facebook", "5 = blog") cat("PROBLEMA 3\n")
+cat("Códigos de redes sociales:\n") for(codigo in codigos_redes) {
+cat("-", codigo, "\n") }
+
+cat("\nRespuesta: Esta es una variable CUALITATIVA (categórica)\n")
+cat("Explicación: Los números son solo etiquetas para categorías, no
+representan cantidades medibles.\n\n")
+
+# Problema 4
+
+cat("PROBLEMA 4\n")
+
+cat("\n1. ¿Cuál es la cantidad promedio de horas que los estudiantes de
+universidades públicas trabajan cada semana?\n") cat(" - Individuos:
+Estudiantes de universidades públicas\n") cat(" - Variable: Horas
+trabajadas por semana\n") cat(" - Tipo: CUANTITATIVA (continua)\n")
+
+cat("\n2. ¿Qué proporción de todos los estudiantes universitarios de
+México están inscritos en una universidad pública?\n") cat(" -
+Individuos: Todos los estudiantes universitarios de México\n") cat(" -
+Variable: Tipo de universidad (pública vs privada)\n") cat(" - Tipo:
+CUALITATIVA\n")
+
+cat("\n3. En las universidades públicas, ¿las estudiantes femeninas
+tienen un promedio de CENEVAL más alto que los estudiantes varones?\n")
+cat(" - Individuos: Estudiantes de universidades públicas\n") cat(" -
+Variables: Género (cualitativa) y Puntaje CENEVAL (cuantitativa)\n")
+
+cat("\n4. ¿Es más probable que los atletas universitarios reciban
+asesoramiento académico que los atletas no universitarios?\n") cat(" -
+Individuos: Atletas (universitarios y no universitarios)\n") cat(" -
+Variables: Estatus atlético y Recibe asesoramiento académico (ambas
+cualitativas)\n\n")
+
+# Problema 5
+
+variables_para_histograma \<- c("Pregunta 1: Horas trabajadas por
+semana", "Pregunta 3: Puntajes CENEVAL")
+
+cat("PROBLEMA 5\n") cat("Variables apropiadas para histogramas
+(CUANTITATIVAS):\n") for(variable in variables_para_histograma) {
+cat("-", variable, "\n") }
+
+cat("\nLos histogramas son apropiados para variables cuantitativas
+porque:\n") cat("- Muestran distribución de frecuencias\n") cat("-
+Permiten visualizar patrones\n") cat("- Los intervalos tienen
+significado matemático\n") cat("- Se pueden calcular media, mediana y
+desviación estándar\n")
